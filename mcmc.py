@@ -70,21 +70,16 @@ for _ in range(N):
     u = np.random.uniform(size=1)[0]
     
     # x* ~ q(x*|xi)
-    #' make it reversible...and from normal distribution?
+    #' if we used truncnorm, the detailed balance condition will be satisfied
     x_star = float(truncnorm_X.rvs(1)[0])
     
-    # pi(x*)q(x|x*)
-    
+    # pi(x*)q(x|x*)    
     numerator = get_metric(x_star, X, Y) * stats.truncnorm.pdf(x=x, a=(lower - mu) / sigma, 
                                                            b=(upper - mu) / sigma, loc=x_star, scale=sigma)
-    #numerator = get_metric(x_star, X, Y) * truncnorm_X.cdf(x=x)
-    
     
     # pi(x)q(x*|x)
     denominator = get_metric(x, X, Y) * stats.truncnorm.pdf(x=x_star, a=(lower - mu) / sigma, 
                                                         b=(upper - mu) / sigma, loc=x, scale=sigma)
-    #denominator = get_metric(x, X, Y) * truncnorm_X.cdf(x=x_star)
-    
     
     if denominator == 0:
         #print("denominator is 0", x, ", ", x_star)
