@@ -5,7 +5,7 @@ test script for MH algorithm for some rather silly example
 
 states -> some number on the real number line. 
 
-q(x | x') = q(x' | x) for RJMCMC?
+q(x | x') = q(x' | x) for _detailed balance condition_?
 evaluation: p(x) = some objective function (say tree splits)
 
 
