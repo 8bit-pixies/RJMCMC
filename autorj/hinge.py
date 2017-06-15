@@ -127,6 +127,8 @@ class Hinge(BaseEstimator, TransformerMixin):
     Parameters
     ----------
     
+    This class should be fixed up to handle pandas dataframes...
+    
     mask: the column indices to keep
     hinge: the hinge point to calculate    
     """
@@ -171,21 +173,46 @@ class Hinge(BaseEstimator, TransformerMixin):
         self.psplit = psplit
         self.search_min = search_min
     
-    def fit(self, x, y=None):        
-        x = x[:, self.mask]        
+    def fit(self, x, y=None):
+        """
+        please fix this up
+        """
+        if type(self.mask) is str:
+            x = np.array(x[self.mask])
+        else:
+            x = x[:, self.mask] 
         
         hinge_point, metric, _, _ = self._best_split(x, y, self.psplit, self.search_min)
         self.hinge = hinge_point
         return self
     
-    def transform(self, x):
-        x1 = x[:, self.mask]
+    def transform(self, x, transform="both"):
+        """
+        very ugly code, please fix up        
+        """
+        if type(self.mask) is str:
+            x1 = np.array(x[self.mask])
+        else:
+            x1 = x[:, self.mask] 
         x1_shape = x1.shape
         pos_hinge = np.maximum.reduce([x1-self.hinge, np.zeros(x1_shape)])
         neg_hinge = np.maximum.reduce([self.hinge-x1, np.zeros(x1_shape)])
-        
-        return np.hstack([x, pos_hinge.reshape(-1, 1), neg_hinge.reshape(-1, 1)])
-        
+                
+        if type(self.mask) is str:
+            knot_point = "{0:.2f}".format(round(self.hinge,2))
+            knot_point = knot_point.replace(".", "_")
+            pos_name = "{}_poshinge{}".format(self.mask, knot_point)
+            neg_name = "{}_neghinge{}".format(self.mask, knot_point)
+            x[pos_name] = pos_hinge
+            x[neg_name] = neg_hinge
+            return x
+        else:
+            if transform == "both":
+                return np.hstack([x, pos_hinge.reshape(-1, 1), neg_hinge.reshape(-1, 1)])
+            elif transform == "positive":
+                return np.hstack([x, pos_hinge.reshape(-1, 1)])
+            else:
+                return np.hstack([x, neg_hinge.reshape(-1, 1)])
         
 
 if __name__ == "__main__":
