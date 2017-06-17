@@ -122,6 +122,7 @@ def best_feature_split(x, y):
         }
 
 
+
 class Hinge(BaseEstimator, TransformerMixin):
     """
     Parameters
@@ -186,10 +187,11 @@ class Hinge(BaseEstimator, TransformerMixin):
         self.hinge = hinge_point
         return self
     
-    def transform(self, x, transform="both"):
+    def transform(self, x_df, transform="both"):
         """
         very ugly code, please fix up        
         """
+        x = x_df.copy()
         if type(self.mask) is str:
             x1 = np.array(x[self.mask])
         else:
@@ -201,8 +203,8 @@ class Hinge(BaseEstimator, TransformerMixin):
         if type(self.mask) is str:
             knot_point = "{0:.2f}".format(round(self.hinge,2))
             knot_point = knot_point.replace(".", "_")
-            pos_name = "{}_poshinge{}".format(self.mask, knot_point)
-            neg_name = "{}_neghinge{}".format(self.mask, knot_point)
+            pos_name = "{}_poshinge".format(self.mask)
+            neg_name = "{}_neghinge".format(self.mask)
             x[pos_name] = pos_hinge
             x[neg_name] = neg_hinge
             return x
