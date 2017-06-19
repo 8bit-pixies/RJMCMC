@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 
 # get best split by metric??
+# need to modify for regression
 
 def get_classification(y):
     """
@@ -17,7 +18,7 @@ def get_classification(y):
     best = max(c_y, key=c_y.get)
     return c_y[best]
 
-def error_on_split(x, y, split):
+def error_on_split(x, y, split, mode="classification"):
     """
     parameters:
     
@@ -47,10 +48,22 @@ def error_on_split(x, y, split):
     if float(min_group_size)/len(y) < 0.10 :
         return 1
     
-    total1 = get_classification(y[split1])
-    total2 = get_classification(y[split2])
+    if mode=="classification":
+        total1 = get_classification(y[split1])
+        total2 = get_classification(y[split2])
+        return 1-(float(total1+total2)/len(y))
+    else:
+        # assume regression
+        total1 = (y[split1] - np.mean(y[split1]))**2
+        total2 = (y[split2] - np.mean(y[split2]))**2
+        total_all = np.hstack([total1, total2])
+        # we want to maximize this!
+        return np.mean(total_all)
+        
+def error_on_split_reg(x, y, split):
+    return error_on_split(x, y, split, mode="regression")
     
-    return 1-(float(total1+total2)/len(y))
+    
 
 def best_split(x, y, psplit=error_on_split, search_min=True):
     """
@@ -182,8 +195,11 @@ class Hinge(BaseEstimator, TransformerMixin):
             x = np.array(x[self.mask])
         else:
             x = x[:, self.mask] 
-        
-        hinge_point, metric, _, _ = self._best_split(x, y, self.psplit, self.search_min)
+        try:
+            hinge_point, metric, _, _ = self._best_split(x, y, self.psplit, self.search_min)
+        except:
+            # take hinge to be middle...
+            hinge_point = np.mean(x)
         self.hinge = hinge_point
         return self
     
